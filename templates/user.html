@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<!-- DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"-->
+
+<html lang="en-US">
+	<head>
+		<title>2fa: Secure Storage and Retrieval</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<!--
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<!--
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+-->	
+		<style type="text/css">
+			body {
+				background-color: black;
+				color: white;
+			}
+ /* Flex Containers */
+			.flexcon {
+				display: flex;
+				color: white;
+				background-color: black;
+				flex-flow: column wrap;
+				align-items: center;
+			}
+			.flexcon[name$="-cards"] {
+				display: flex;
+				flex-flow: row wrap;
+				justify-content: stretch;
+				background-color: DarkGray;
+			}
+/* 	Secure Data Retrieval Cards */
+			.card-container {
+				background-color: transparent;
+				width: 200px;
+				height: 175px;
+				border: solid white; border-width: 1px 1px 1px 1px;
+				perspective: 1000px;
+			}
+			.card {
+				position: relative;
+				width: 100%;
+				height: 100%;
+				text-align: center;
+				transition: transform 0.4s;
+				transform-style: preserve-3d;
+			}
+			.card.flipped {
+				transform: rotateX(180deg);
+			}
+			.card-front, .card-back {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				backface-visibility: hidden;			
+			}
+			.card-front {
+				background-color: DarkGray;
+				color: white;
+			}
+			.card-front:hover {
+				background-color: Tomato;
+				color: white;
+				cursor: pointer;
+			}
+			.card-back {
+				background-color: Tomato;
+				color: white;
+				transform: rotateX(180deg);
+			}
+			.card-back:hover {
+				background-color: #cc4f38;
+				color: white;
+				cursor: pointer;
+			}
+			.close {
+				color: #aaaaaa;
+				float: right;
+				font-size: 28px;
+				font-weight: bold;
+			}
+			.close:hover {
+				color: white;
+				float: right;
+				font-size: 28px;
+				font-weight: bold;
+				cursor: pointer;
+			}
+/* New Account Card Transform Transition and */
+
+			.new-container {
+				background-color: transparent;
+				width: 200px;
+				height: 175px;
+				border: solid white; border-width: 1px 2px 1px 1px;
+				perspective: 1000px;
+			}
+			.new {
+				position: relative;
+				width: 100%;
+				height: 100%;
+				text-align: center;
+				transition: transform 0.4s;
+				transform-style: preserve-3d;
+			}
+			.new-front, .new-back {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				backface-visibility: hidden;
+			}
+			.new-front[name="new-account"] {
+				background-color: DodgerBlue;
+				color: white;
+			}
+			.new-front[name="new-account"]:hover {
+				background-color: #1873cc;
+				color: white;
+				cursor: pointer;
+			}
+			.new-back {
+				background-color: DodgerBlue;
+				color: white;
+				transform: rotateX(180deg);
+			}
+			.new.flipped {
+				transform: rotateX(180deg);
+			}
+/* 	Specific Elements	*/
+			.header {
+				width: auto;
+				background-color: DarkGray;
+			}
+			button.header {
+				background-color: DarkGray;
+				color: white;
+				font-size: 2em; padding: 0; margin: 0;
+				border: solid white; border-width: 1px 2px 1px 1px; 
+				width: 100%;
+			}
+			.header:hover {
+				background-color: gray;
+				color: white;
+				cursor: pointer;
+			}
+			input {
+				border: 1px solid DarkGray;
+				background-color: #f1f1f1;
+				padding: 10px;
+				font-size: 15px;
+				width: 89%;
+			}
+			input[type="submit"]:hover{
+				background-color: Tomato;
+				color: white;
+				cursor: pointer;
+			}
+			div[name="central-div"] {
+				border: solid white; border-width: 4px 3px 4px 4px;
+				background-color: white;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="flexcon" name="main">
+			<div name="central-div">
+				<!-- Authentication Codes -->
+				<div class="header">
+					<button class="header">Authentication Codes</button>
+				</div>
+				<div class="flexcon" name="authentication-key-cards">
+					{% for account in ak_accounts %}
+					<div class="card-container" title="authentication-keys" name="{{account}}">
+						<div class="card">
+							<div class="card-front">
+								<span class="close" title="authentication-keys" name="{{account}}" >&times;</span>
+								<h1>{{account}}</h1>
+							</div>
+							<div class="card-back">
+								<span class="close" title="authentication-keys" name="{{account}}" >&times;</span>
+								<h1 title="authentication_code" name="{{account}}"></h1>
+								<h3 title="ttl" name="{{account}}"></h3>
+								<h2>{{account}}</h2>
+							</div>
+						</div>
+					</div>
+					{% endfor %}
+					<div class="new-container" name="new-account">
+						<div class="new" name="new-account">
+							<div class="new-front" name="new-account">
+								<h1>encrypt auth_key</h1>
+							</div>
+							<div class="new-back" name="new-account">
+								<form id="authentication-key" action="/user" method="POST">
+									<input type="hidden" name="instruction" value="store">
+									<input type="hidden" name="csrf-token" value="{{csrf_token}}">
+									<input required type="password" name="authentication-key" placeholder="Enter authentication key"><br>
+									<input required type="password" name="authentication-key-confirmation" placeholder="Confirm authentication key"><br>
+									<input required type="text" name="account" placeholder="Enter account"><br>
+									<input type="submit" value="Store encrypted">
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Passwords -->
+				<div class="header">
+					<button class="header">Passwords</button>
+				</div>
+				<div class="flexcon" name="password-cards">
+					{% for account in pw_accounts %}
+					<div class="card-container" title="passwords" name="{{account}}">
+						<div class="card">
+							<div class="card-front">
+								<span class="close" title="passwords" name="{{account}}" >&times;</span>
+								<h1>{{account}}</h1>
+							</div>
+							<div class="card-back">
+								<span class="close" title="passwords" name="{{account}}" >&times;</span>
+								<h1 title="password" name="{{account}}"></h1>
+								<h2>{{account}}</h2>
+							</div>
+						</div>
+					</div>
+					{% endfor %}
+					<div class="new-container" name="new-account">
+						<div class="new" name="new-account">
+							<div class="new-front" name="new-account">
+								<h1>encrypt password</h1>
+							</div>
+							<div class="new-back" name="new-account">
+								<form id="password" action="/user" method="POST">
+									<input type="hidden" name="instruction" value="store">
+									<input type="hidden" name="csrf-token" value="{{csrf_token}}">
+									<input required type="password" name="password" placeholder="Enter password"><br>
+									<input required type="password" name="password-confirmation" placeholder="Confirm password"><br>
+									<input required type="text" name="account" placeholder="Enter account"><br>
+									<input type="submit" value="Store encrypted">
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Messages -->
+				<div class="header">
+					<button class="header">Messages</button>
+				</div>
+				<div class="flexcon" name="message-cards">
+					{% for account in msg_recipients %}
+					<div class="card-container" title="messages" name="{{account}}">
+						<div class="card">
+							<div class="card-front">
+								<span class="close" title="messages" name="{{account}}" >&times;</span>
+								<h1>{{account}}</h1>
+							</div>
+							<div class="card-back">
+								<span class="close" title="messages" name="{{account}}" >&times;</span>
+								<h1 title="message" name="{{account}}"></h1>
+								<h2>{{account}}</h2>
+							</div>
+						</div>
+					</div>
+					{% endfor %}
+					<div class="new-container" name="new-account">
+						<div class="new" name="new-account">
+							<div class="new-front" name="new-account">
+								<h1>encrypt message</h1>
+							</div>
+							<div class="new-back" name="new-account">
+								<form id="message" action="/user" method="POST">
+									<input type="hidden" name="instruction" value="store">
+									<input type="hidden" name="csrf-token" value="{{csrf_token}}">
+									<input required type="text" name="message" placeholder="Enter message"><br>
+									<input required type="text" name="recipient" placeholder="Enter subject"><br>
+									<input type="submit" value="Store encrypted">
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			$(document).ready(function(){
+				//Toggle display of sections on click
+				$(".header").click(function(){
+					$(this).next().toggle();				
+				});
+				//Flip data cards and retrieve data on click
+				$(".card-container").click(function(){
+					this.children[0].classList.toggle('flipped');
+					var category = this.getAttribute('title');
+					var data_type = category.slice(0,-1);
+					var id_ = this.getAttribute('name');
+					if (this.children[0].classList.length === 2) {//if card is flipped (classList length is 2) retrieve data of type and name
+						$.post('/user', {instruction:'retrieve', 'category':category, account:id_, 'csrf-token':'{{csrf_token}}'}, function(data){
+							var data_len = Object.keys(data).length
+							if (data_len ===1) {
+								$('h1[title="'+data_type+'"][name="'+id_+'"]').text(data['data']);
+							} else if (data_len ===2) {
+								var data_type_1= 'authentication_code';
+								var data_type_2= 'ttl';
+								$('h1[title="'+data_type_1+'"][name="'+id_+'"]').text(data[data_type_1]);
+								$('h3[title="'+data_type_2+'"][name="'+id_+'"]').text(Number.parseFloat(data[data_type_2]).toPrecision(3) + ' sec');
+							};
+						});
+					} else {
+// need to edit this to ensure maximum functionality, if card is not flipped, clear data
+						var headers = this.children[0].children[1].children
+						if (headers.length === 3) {
+							$('h1[title="'+data_type+'"][name="'+id_+'"]').text('');
+						} else if (headers.length ===4) {
+							$('h1[title="authentication_code"][name="'+id_+'"]').text('');
+							$('h3[title="ttl"][name="'+id_+'"]').text('');
+						};
+					};
+				});
+				//Confirm data deletion on click; delete data upon confirmation 
+				$(".close").click(function(event){
+					event.stopPropagation();	//halt click propagation
+					var account_name = this.getAttribute('name');
+					var category = this.getAttribute('title');
+					var data_type = category.slice(0,-1).split('-').join(' ');
+					if (confirm('Delete the '+data_type+' for your '+account_name+' account?')) {
+						$.post('/user',{instruction:'delete', 'category':category, account:account_name, 'csrf-token':'{{csrf_token}}'}, function(response){
+							if (response['delete']===true){
+								window.location.reload();//The backend process to save takes longer than the ajax trigger to load the supposedly updated database and the user page
+							} else {
+								alert('You have not stored a '+ data_type + ' for ' + account_name);
+							};
+						});
+					};
+				});
+				//Flip new account cards on click
+				$(".new-container").click(function(){
+					this.children[0].classList.toggle('flipped');
+				});
+				//Permit input entry on card backs by halting click propagation
+				$("input").click(function(e){
+					e.stopPropagation();
+				});
+			});
+		</script>
+
+	</body>
+</html>
